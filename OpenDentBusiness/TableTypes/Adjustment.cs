@@ -1,0 +1,59 @@
+using System;
+using System.Collections;
+
+namespace OpenDentBusiness{
+	
+	///<summary>An adjustment in the patient account.  Usually, adjustments are very simple, just being assigned to one patient and provider.  But they can also be attached to a procedure to represent a discount on that procedure.  Attaching adjustments to procedures is not automated, so it is not very common.</summary>
+	[Serializable()]
+	public class Adjustment:TableBase{
+		///<summary>Primary key.</summary>
+		[CrudColumn(IsPriKey=true)]
+		public long AdjNum;
+		///<summary>The date that the adjustment shows in the patient account.</summary>
+		public DateTime AdjDate;
+		///<summary>Amount of adjustment.  Can be pos or neg.</summary>
+		public double AdjAmt;
+		///<summary>FK to patient.PatNum.</summary>
+		public long PatNum;
+		///<summary>FK to definition.DefNum.</summary>
+		public long AdjType;
+		///<summary>FK to provider.ProvNum.</summary>
+		public long ProvNum;
+		///<summary>Note for this adjustment.</summary>
+		public string AdjNote;
+		///<summary>Procedure date.  Not when the adjustment was entered.</summary>
+		public DateTime ProcDate;
+		///<summary>FK to procedurelog.ProcNum.  Only used if attached to a procedure.  Otherwise, 0.</summary>
+		public long ProcNum;
+		///<summary>Timestamp automatically generated and user not allowed to change.  The actual date of entry.</summary>
+		[CrudColumn(SpecialType=CrudSpecialColType.DateEntry)]
+		public DateTime DateEntry;
+		///<summary>FK to clinic.ClinicNum.</summary>
+		public long ClinicNum;
+		///<summary>FK to statement.StatementNum.  Only used when the statement in an invoice.</summary>
+		public long StatementNum;
+
+		///<summary></summary>
+		public Adjustment Clone() {
+			return (Adjustment)this.MemberwiseClone();
+		}
+
+		
+	}
+
+	
+
+
+	
+
+
+}
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,120 @@
+using System;
+using System.Collections;
+using System.Data;
+using System.Reflection;
+
+namespace OpenDentBusiness{
+  ///<summary></summary>
+	public class ZipCodes{
+		///<summary></summary>
+		private static ZipCode[] list;
+		///<summary></summary>
+		private static ArrayList aLFrequent;
+		///<summary>Only used from UI.</summary>
+		public static ArrayList ALMatches;
+		
+		public static ZipCode[] List {
+			//No need to check RemotingRole; no call to db.
+			get {
+				if(list==null) {
+					RefreshCache();
+				}
+				return list;
+			}
+			set {
+				list=value;
+			}
+		}
+
+		public static ArrayList ALFrequent {
+			//No need to check RemotingRole; no call to db.
+			get {
+				if(aLFrequent==null) {
+					RefreshCache();
+				}
+				return aLFrequent;
+			}
+			set {
+				aLFrequent=value;
+			}
+		}
+
+		public static DataTable RefreshCache() {
+			//No need to check RemotingRole; Calls GetTableRemotelyIfNeeded().
+			string command="SELECT * from zipcode ORDER BY zipcodedigits";
+			DataTable table=Cache.GetTableRemotelyIfNeeded(MethodBase.GetCurrentMethod(),command);
+			table.TableName="ZipCode";
+			FillCache(table);
+			return table;
+		}
+
+		///<summary></summary>
+		public static void FillCache(DataTable table) {
+			//No need to check RemotingRole; no call to db.
+			list=Crud.ZipCodeCrud.TableToList(table).ToArray();
+			aLFrequent=new ArrayList();
+			for(int i=0;i<list.Length;i++) {
+				if(list[i].IsFrequent) {
+					aLFrequent.Add(list[i]);
+				}
+			}
+		}
+
+		///<summary></summary>
+		public static long Insert(ZipCode Cur){
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				Cur.ZipCodeNum=Meth.GetLong(MethodBase.GetCurrentMethod(),Cur);
+				return Cur.ZipCodeNum;
+			}
+			return Crud.ZipCodeCrud.Insert(Cur);
+		}
+
+		///<summary></summary>
+		public static void Update(ZipCode Cur){
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				Meth.GetVoid(MethodBase.GetCurrentMethod(),Cur);
+				return;
+			}
+			Crud.ZipCodeCrud.Update(Cur);
+		}
+
+		///<summary></summary>
+		public static void Delete(ZipCode Cur){
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				Meth.GetVoid(MethodBase.GetCurrentMethod(),Cur);
+				return;
+			}
+			string command = "DELETE from zipcode WHERE zipcodenum = '"+POut.Long(Cur.ZipCodeNum)+"'";
+			Db.NonQ(command);
+		}
+
+		///<summary></summary>
+		public static void GetALMatches(string zipCodeDigits){
+			//No need to check RemotingRole; no call to db.
+			ALMatches=new ArrayList();
+			for(int i=0;i<List.Length;i++){
+				if(List[i].ZipCodeDigits==zipCodeDigits){
+					ALMatches.Add(List[i]);
+				}
+			}
+
+		}
+
+	}
+
+	
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

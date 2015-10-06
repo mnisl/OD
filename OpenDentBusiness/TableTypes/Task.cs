@@ -1,0 +1,115 @@
+using System;
+using System.Collections;
+using System.Data;
+
+namespace OpenDentBusiness{
+
+	///<summary>A task is a single todo item.</summary>
+	[Serializable]
+	public class Task:TableBase {
+		///<summary>Primary key.</summary>
+		[CrudColumn(IsPriKey=true)]
+		public long TaskNum;
+		///<summary>FK to tasklist.TaskListNum.  If 0, then it will show in the trunk of a section.  </summary>
+		public long TaskListNum;
+		///<summary>Only used if this task is assigned to a dated category.  Children are NOT dated.  Only dated if they should show in the trunk for a date category.  They can also have a parent if they are in the main list as well.</summary>
+		public DateTime DateTask;
+		///<summary>FK to patient.PatNum or appointment.AptNum. Only used when ObjectType is not 0.</summary>
+		public long KeyNum;
+		///<summary>The description of this task.  Might be very long.</summary>
+//TODO: This column may need to be changed to the TextIsClobNote attribute to remove more than 50 consecutive new line characters.
+		[CrudColumn(SpecialType=CrudSpecialColType.TextIsClob)]
+		public string Descript;
+		///<summary>Enum:TaskStatusEnum New,Viewed,Done.  We may want to put an index on this column someday.</summary>
+		public TaskStatusEnum TaskStatus;
+		///<summary>True if it is to show in the repeating section.  There should be no date.  All children and parents should also be set to IsRepeating=true.</summary>
+		public bool IsRepeating;
+		///<summary>Enum:TaskDateType  None, Day, Week, Month.  If IsRepeating, then setting to None effectively disables the repeating feature.</summary>
+		public TaskDateType DateType;
+		///<summary>FK to task.TaskNum  If this is derived from a repeating task, then this will hold the TaskNum of that task.  It helps automate the adding and deleting of tasks.  It might be deleted automatically if not are marked complete.</summary>
+		public long FromNum;
+		///<summary>Enum:TaskObjectType  0=none,1=Patient,2=Appointment.  More will be added later. If a type is selected, then the KeyNum will contain the primary key of the corresponding Patient or Appointment.  Does not really have anything to do with the ObjectType of the parent tasklist, although they tend to match.</summary>
+		public TaskObjectType ObjectType;
+		///<summary>The date and time that this task was added.  Used to sort the list by the order entered.</summary>
+		[CrudColumn(SpecialType=CrudSpecialColType.DateT)]
+		public DateTime DateTimeEntry;
+		///<summary>FK to userod.UserNum.  The person who created the task.</summary>
+		public long UserNum;
+		///<summary>The date and time that this task was marked "done".</summary>
+		[CrudColumn(SpecialType=CrudSpecialColType.DateT)]
+		public DateTime DateTimeFinished;
+		///<summary>Only used when tracking unread status by user instead of by task.  This gets set to true to indicate it has not yet been read.</summary>
+		[CrudColumn(IsNotDbColumn=true)]
+		public bool IsUnread;
+		///<Summary>Not a database column.  A string description of the parent of this task.  It will only include the immediate parent.  Only useful in the New and OpenTicket tabs.</Summary>
+		[CrudColumn(IsNotDbColumn=true)]
+		public string ParentDesc;
+		///<Summary>Not a database column.  Attached patient's name (NameLF) if there is an attached patient.</Summary>
+		[CrudColumn(IsNotDbColumn=true)]
+		public string PatientName;
+		///<summary>FK to definition.DefNum.  The priority for this task which is used when filling task lists.  The placement of the task in the list is dependent on the item order of the definitions.</summary>
+		public long PriorityDefNum;
+
+		///<summary></summary>
+		public Task() {
+			Descript="";
+			ParentDesc="";//Might not be necessary.
+		}
+
+		///<summary></summary>
+		public Task Copy() {
+			return (Task)MemberwiseClone();
+		}
+
+		public override bool Equals(object obj) {
+			if(TaskNum==((Task)obj).TaskNum
+				&& TaskListNum==((Task)obj).TaskListNum
+				&& DateTask==((Task)obj).DateTask
+				&& KeyNum==((Task)obj).KeyNum
+				&& Descript==((Task)obj).Descript
+				&& TaskStatus==((Task)obj).TaskStatus
+				&& IsRepeating==((Task)obj).IsRepeating
+				&& DateType==((Task)obj).DateType
+				&& FromNum==((Task)obj).FromNum
+				&& ObjectType==((Task)obj).ObjectType
+				&& DateTimeEntry==((Task)obj).DateTimeEntry
+				&& UserNum==((Task)obj).UserNum
+				&& DateTimeFinished==((Task)obj).DateTimeFinished
+				&& PriorityDefNum==((Task)obj).PriorityDefNum)
+			{
+				return true;
+			}
+			return false;
+			//return base.Equals(obj);
+		}
+
+		public override int GetHashCode() {
+			return base.GetHashCode();
+		}
+		
+
+	}
+	
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

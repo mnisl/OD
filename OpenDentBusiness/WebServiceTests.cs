@@ -1,0 +1,267 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Drawing;
+using System.Reflection;
+using System.Text;
+
+namespace OpenDentBusiness {
+	///<summary>These are only run from the Unit Testing framework</summary>
+	public class WebServiceTests {
+		public static string GetString(string str) {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetString(MethodBase.GetCurrentMethod(),str);
+			}
+			return str+"-Processed";
+		}
+
+		public static string GetStringNull(string str) {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetString(MethodBase.GetCurrentMethod(),str);
+			}
+			return null;
+		}
+
+		public static string GetStringCarriageReturn(string str) {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetString(MethodBase.GetCurrentMethod(),str);
+			}
+			return str+"-Processed";
+		}
+
+		public static int GetInt(int intVal) {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetInt(MethodBase.GetCurrentMethod(),intVal);
+			}
+			return 2;
+		}
+
+		public static long GetLong(long longVal) {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetLong(MethodBase.GetCurrentMethod(),longVal);
+			}
+			return 2;
+		}
+
+		public static void GetVoid() {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				Meth.GetVoid(MethodBase.GetCurrentMethod());
+				return;
+			}
+			return;
+		}
+
+		public static bool GetBool() {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetBool(MethodBase.GetCurrentMethod());
+			}
+			return true;
+		}
+
+		public static Patient GetObjectPat() {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetObject<Patient>(MethodBase.GetCurrentMethod());
+			}
+			Patient pat=new Patient();
+			pat.LName="Smith";
+			pat.FName=null;
+			return pat;
+		}
+
+		public static DataTable GetTable() {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetTable(MethodBase.GetCurrentMethod());
+			}
+			string command="SELECT 'cell00'";
+			DataTable table=Db.GetTable(command);
+			return table;
+		}
+
+		public static DataTable GetTableCarriageReturn() {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetTable(MethodBase.GetCurrentMethod());
+			}
+			string command="SELECT '"+POut.String("cell\r\n00")+"'";
+			DataTable table=Db.GetTable(command);
+			return table;
+		}
+
+		public static DataTable GetTable2by3() {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetTable(MethodBase.GetCurrentMethod());
+			}
+			string command="SELECT '"+POut.String("cell00")+"','"+POut.String("cell01")+"' "
+				+"UNION ALL "
+				+"SELECT '"+POut.String("cell10")+"','"+POut.String("cell11")+"' "
+				+"UNION ALL "
+				+"SELECT '"+POut.String("cell20")+"','"+POut.String("cell21")+"'";
+			DataTable table=Db.GetTable(command);
+			return table;
+		}
+
+		//also table with special chars: |, <, >, &, ', ", and \
+		public static DataTable GetTableSpecialChars() {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetTable(MethodBase.GetCurrentMethod());
+			}
+			//Special characters in the columns as well as in the column names
+			string command="SELECT '"+POut.String("cell00|")+"' AS '|<>','"+POut.String("cell01<")+"' AS '&\\'\"\\\\' "
+				+"UNION ALL "
+				+"SELECT '"+POut.String("cell10>")+"','"+POut.String("cell11&")+"' "
+				+"UNION ALL "
+				+"SELECT '"+POut.String("cell20\'")+"','"+POut.String("cell21\"")+"' "
+				+"UNION ALL "
+				+"SELECT '"+POut.String("cell30\\")+"','"+POut.String("cell31/")+"'";
+			DataTable table=Db.GetTable(command);
+			table.TableName="Table|<>&'\"\\";
+			return table;
+		}
+
+		public static DataTable GetTableDataTypes() {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetTable(MethodBase.GetCurrentMethod());
+			}
+			Random rnd=new Random();
+			string rndStr=rnd.Next(1000000).ToString();
+			string command="DROP TABLE IF EXISTS tempdt"+rndStr+@";"
+				+"CREATE TABLE tempdt"+rndStr+@" (TString VARCHAR(50),TDecimal DECIMAL(10,2),TDateTime DATETIME);"
+				+"INSERT INTO tempdt"+rndStr+@" (TString,TDecimal,TDateTime) VALUES ('string',123.45,DATE('2013-04-11'));";
+			Db.NonQ(command);
+			command="SELECT * FROM tempdt"+rndStr+@";";
+			DataTable table=Db.GetTable(command);
+			command="DROP TABLE IF EXISTS tempdt"+rndStr+@";";
+			Db.NonQ(command);
+			return table;
+		}
+
+		public static DataSet GetDataSet() {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetDS(MethodBase.GetCurrentMethod());
+			}
+			string command="SELECT 'cell00'";
+			DataSet ds=new DataSet();
+			DataTable table=Db.GetTable(command);
+			table.TableName="table0";
+			ds.Tables.Add(table);
+			return ds;
+		}
+
+		public static List<int> GetListInt() {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetObject<List<int>>(MethodBase.GetCurrentMethod());
+			}
+			List<int> listInt=new List<int>();
+			listInt.Add(2);
+			return listInt;
+		}
+
+		public static Patient[] GetArrayPatient() {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetObject<Patient[]>(MethodBase.GetCurrentMethod());
+			}
+			Patient[] retVal=new Patient[2];
+			retVal[0]=new Patient();
+			retVal[0].LName="Jones";
+			retVal[1]=null;
+			return retVal;
+		}
+
+		public static string SendNullParam(string str) {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetString(MethodBase.GetCurrentMethod(),str);
+			}
+			if(str==null) {
+				return "nullOK";
+			}
+			else {
+				return "null not found";
+			}
+		}
+
+		public static Patient GetObjectNull() {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetObject<Patient>(MethodBase.GetCurrentMethod());
+			}
+			return null;
+		}
+
+		public static Color SendColorParam(Color color) {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetObject<Color>(MethodBase.GetCurrentMethod(),color);
+			}
+			if(color.ToArgb()==Color.Fuchsia.ToArgb()) {
+				return Color.Green;
+			}
+			return Color.Red;//indicates error
+		}
+
+		public static string SendProviderColor(Provider prov) {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetString(MethodBase.GetCurrentMethod(),prov);
+			}
+			if(prov.ProvColor.ToArgb()==Color.Fuchsia.ToArgb()) {
+				return "fuchsiaOK";
+			}
+			return "error";
+		}
+
+		public static string SendSheetParameter(SheetParameter sheetParam) {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetString(MethodBase.GetCurrentMethod(),sheetParam);
+			}
+			if(sheetParam.ParamName=="ParamNameOK") {
+				return "paramNameOK";
+			}
+			return "error";
+		}
+
+		public static string SendSheetWithFields(Sheet sheet) {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetString(MethodBase.GetCurrentMethod(),sheet);
+			}
+			if(sheet.SheetFields[0].FieldName=="FieldNameGreen") {
+				return "fieldOK";
+			}
+			return "error";
+		}
+
+		public static string SendSheetDefWithFieldDefs(SheetDef sheetdef) {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetString(MethodBase.GetCurrentMethod(),sheetdef);
+			}
+			if(sheetdef.SheetFieldDefs[0].FieldName=="FieldNameTeal") {
+				return "fielddefOK";
+			}
+			return "error";
+		}
+
+		public static TimeSpan GetTimeSpan() {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetObject<TimeSpan>(MethodBase.GetCurrentMethod());
+			}
+			return new TimeSpan(1,0,0);
+		}
+
+		public static string GetStringContainingCR() {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetString(MethodBase.GetCurrentMethod());
+			}
+			return "Line1\r\nLine2";
+		}
+
+		public static List<Task> GetListTasksContainingCR() {
+			if(RemotingClient.RemotingRole==RemotingRole.ClientWeb) {
+				return Meth.GetObject<List<Task>>(MethodBase.GetCurrentMethod());
+			}
+			Task task=new Task();
+			task.Descript="Line1\r\nLine2";
+			List<Task> retVal=new List<Task>();
+			retVal.Add(task);
+			return retVal;
+		}
+
+
+
+
+	}
+}
